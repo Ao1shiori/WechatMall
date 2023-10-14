@@ -13,7 +13,7 @@ import java.util.Map;
  * @Time: 2023/10/14  22:56
  */
 
-@Api("登录接口")
+@Api(tags = "登录接口")
 @RestController
 @RequestMapping("/admin/acl/index")
 @CrossOrigin
