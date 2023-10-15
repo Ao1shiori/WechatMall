@@ -33,7 +33,7 @@ public class RoleController {
                            @PathVariable Long limit,
                            RoleQueryVo roleQueryVo){
         //传递当前页和每页记录数
-        Page<Role> pageParam = new Page<Role>(current,limit);
+        Page<Role> pageParam = new Page<>(current, limit);
         //调用service返回分页对象
         IPage<Role> pageModel = roleService.selectRolePage(pageParam,roleQueryVo);
         return Result.ok(pageModel);

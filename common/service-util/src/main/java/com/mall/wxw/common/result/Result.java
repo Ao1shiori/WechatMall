@@ -22,7 +22,7 @@ public class Result<T> {
     private Result() { }
 
     //设置数据,返回对象的方法
-    public static<T> Result<T> build(T data,ResultCodeEnum resultCodeEnum) {
+    public static<T> Result<T> build(Integer code, String message, T data) {
         //创建Result对象，设置值，返回对象
         Result<T> result = new Result<>();
         //判断返回结果中是否需要数据
@@ -31,20 +31,20 @@ public class Result<T> {
             result.setData(data);
         }
         //设置其他值
-        result.setCode(resultCodeEnum.getCode());
-        result.setMessage(resultCodeEnum.getMessage());
+        result.setCode(code);
+        result.setMessage(message);
         //返回设置值之后的对象
         return result;
     }
 
     //成功的方法
     public static<T> Result<T> ok(T data) {
-        return build(data, ResultCodeEnum.SUCCESS);
+        return build(ResultCodeEnum.SUCCESS.getCode(),ResultCodeEnum.SUCCESS.getMessage(),data);
     }
 
     //失败的方法
     public static<T> Result<T> fail(T data) {
-        return build(data,ResultCodeEnum.FAIL);
+        return build(ResultCodeEnum.FAIL.getCode(),ResultCodeEnum.FAIL.getMessage(),data);
     }
 
 }

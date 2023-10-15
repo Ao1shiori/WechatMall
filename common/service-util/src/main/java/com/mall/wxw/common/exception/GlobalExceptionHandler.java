@@ -21,6 +21,6 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(MallException.class)
     @ResponseBody
     public Result error(MallException e){
-        return Result.fail(null);
+        return Result.build(e.getCode(),e.getMessage(),null);
     }
 }
