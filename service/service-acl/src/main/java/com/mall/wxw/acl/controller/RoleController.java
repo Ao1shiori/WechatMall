@@ -18,7 +18,7 @@ import java.util.List;
  * @author: wxw24633
  * @Time: 2023/10/14  23:27
  */
-@Api(tags = "用户管理")
+@Api(tags = "角色接口")
 @RestController
 @RequestMapping("/admin/acl/role")
 @Slf4j
