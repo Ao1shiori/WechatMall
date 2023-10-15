@@ -4,6 +4,8 @@ package com.mall.wxw.product.service;
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.mall.wxw.model.product.SkuImage;
 
+import java.util.List;
+
 /**
  * <p>
  * 商品图片 服务类
@@ -14,4 +16,5 @@ import com.mall.wxw.model.product.SkuImage;
  */
 public interface SkuImageService extends IService<SkuImage> {
 
+    List<SkuImage> getImageListBySkuId(Long id);
 }

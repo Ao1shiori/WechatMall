@@ -44,6 +44,9 @@ public class SkuInfoServiceImpl extends ServiceImpl<SkuInfoMapper, SkuInfo> impl
     @Resource
     private SkuAttrValueService skuAttrValueService;
 
+    @Resource
+    private SkuInfoMapper skuInfoMapper;
+
     //获取sku分页列表
     @Override
     public IPage<SkuInfo> selectPage(Page<SkuInfo> pageParam, SkuInfoQueryVo skuInfoQueryVo) {
@@ -108,4 +111,66 @@ public class SkuInfoServiceImpl extends ServiceImpl<SkuInfoMapper, SkuInfo> impl
             skuAttrValueService.saveBatch(skuAttrValueList);
         }
     }
+
+    @Override
+    public SkuInfoVo getSkuInfoVo(Long id) {
+        SkuInfoVo skuInfoVo = new SkuInfoVo();
+        //id查sku基本信息
+        SkuInfo skuInfo = baseMapper.selectById(id);
+        //id查sku商品图片列表
+        List<SkuImage> skuImageList = skuImagesService.getImageListBySkuId(id);
+        //id查sku商品海报列表
+        List<SkuPoster> skuPosterList = skuPosterService.getPosterListBySkuId(id);
+        //id查sku属性信息列表
+        List<SkuAttrValue> skuAttrValueList = skuAttrValueService.getAttrValueListBySkuId(id);
+        //封装所有数据返回
+        BeanUtils.copyProperties(skuInfo,skuInfoVo);
+        skuInfoVo.setSkuImagesList(skuImageList);
+        skuInfoVo.setSkuPosterList(skuPosterList);
+        skuInfoVo.setSkuAttrValueList(skuAttrValueList);
+        return skuInfoVo;
+    }
+
+    @Override
+    public void updateSkuInfo(SkuInfoVo skuInfoVo) {
+        //修改基本信息
+        SkuInfo skuInfo = new SkuInfo();
+        BeanUtils.copyProperties(skuInfoVo,skuInfo);
+        baseMapper.updateById(skuInfo);
+        //修改海报信息
+        Long id = skuInfoVo.getId();
+        LambdaQueryWrapper<SkuPoster> wrapper = new LambdaQueryWrapper<>();
+        wrapper.eq(SkuPoster::getSkuId,id);
+        skuPosterService.remove(wrapper);
+
+        List<SkuPoster> skuPosterList = skuInfoVo.getSkuPosterList();
+        if (!CollectionUtils.isEmpty(skuPosterList)){
+            for (SkuPoster skuPoster : skuPosterList) {
+                skuPoster.setSkuId(skuInfo.getId());
+            }
+            skuPosterService.saveBatch(skuPosterList);
+        }
+        //修改图片信息
+        skuImagesService.remove(new LambdaQueryWrapper<SkuImage>().eq(SkuImage::getSkuId,id));
+
+        List<SkuImage> skuImagesList = skuInfoVo.getSkuImagesList();
+        if (!CollectionUtils.isEmpty(skuImagesList)){
+            for (SkuImage skuImage : skuImagesList) {
+                skuImage.setSkuId(skuInfo.getId());
+            }
+            skuImagesService.saveBatch(skuImagesList);
+        }
+        //修改属性列表
+        skuAttrValueService.remove(new LambdaQueryWrapper<SkuAttrValue>().eq(SkuAttrValue::getSkuId,id));
+
+        List<SkuAttrValue> skuAttrValueList = skuInfoVo.getSkuAttrValueList();
+        if (!CollectionUtils.isEmpty(skuAttrValueList)){
+            for (SkuAttrValue skuAttrValue : skuAttrValueList) {
+                skuAttrValue.setSkuId(skuInfo.getId());
+            }
+            skuAttrValueService.saveBatch(skuAttrValueList);
+        }
+    }
+
+
 }
