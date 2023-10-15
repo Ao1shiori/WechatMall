@@ -14,6 +14,7 @@ import io.swagger.annotations.ApiParam;
 import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
+import java.util.List;
 
 /**
  * <p>
@@ -69,6 +70,50 @@ public class SkuInfoController {
         return Result.ok(null);
     }
 
+    @ApiOperation(value = "删除")
+    @DeleteMapping("remove/{id}")
+    public Result remove(@PathVariable Long id) {
+        skuInfoService.removeById(id);
+        return Result.ok(null);
+    }
+
+    @ApiOperation(value = "根据id列表删除")
+    @DeleteMapping("batchRemove")
+    public Result batchRemove(@RequestBody List<Long> idList) {
+        skuInfoService.removeByIds(idList);
+        return Result.ok(null);
+    }
+
+    /**
+     * 商品审核
+     * @param skuId
+     * @return
+     */
+    @GetMapping("check/{skuId}/{status}")
+    public Result check(@PathVariable("skuId") Long skuId, @PathVariable("status") Integer status) {
+        skuInfoService.check(skuId, status);
+        return Result.ok(null);
+    }
+
+    /**
+     * 商品上架
+     * @param skuId
+     * @return
+     */
+    @GetMapping("publish/{skuId}/{status}")
+    public Result publish(@PathVariable("skuId") Long skuId,
+                          @PathVariable("status") Integer status) {
+        skuInfoService.publish(skuId, status);
+        return Result.ok(null);
+    }
+
+    //新人专享
+    @GetMapping("isNewPerson/{skuId}/{status}")
+    public Result isNewPerson(@PathVariable("skuId") Long skuId,
+                              @PathVariable("status") Integer status) {
+        skuInfoService.isNewPerson(skuId, status);
+        return Result.ok(null);
+    }
 
 }
 

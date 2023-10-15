@@ -172,5 +172,40 @@ public class SkuInfoServiceImpl extends ServiceImpl<SkuInfoMapper, SkuInfo> impl
         }
     }
 
+    @Override
+    public void check(Long skuId, Integer status) {
+        // 更改发布状态
+        SkuInfo skuInfoUp = new SkuInfo();
+        skuInfoUp.setId(skuId);
+        skuInfoUp.setCheckStatus(status);
+        baseMapper.updateById(skuInfoUp);
+    }
+
+    @Override
+    public void publish(Long skuId, Integer status) {
+        // 更改发布状态
+        if(status == 1) {
+            SkuInfo skuInfoUp = new SkuInfo();
+            skuInfoUp.setId(skuId);
+            skuInfoUp.setPublishStatus(1);
+            skuInfoMapper.updateById(skuInfoUp);
+            //TODO 商品上架 后续会完善：发送mq消息更新es数据
+        } else {
+            SkuInfo skuInfoUp = new SkuInfo();
+            skuInfoUp.setId(skuId);
+            skuInfoUp.setPublishStatus(0);
+            skuInfoMapper.updateById(skuInfoUp);
+            //TODO 商品下架 后续会完善：发送mq消息更新es数据
+        }
+    }
+
+    @Override
+    public void isNewPerson(Long skuId, Integer status) {
+        SkuInfo skuInfoUp = new SkuInfo();
+        skuInfoUp.setId(skuId);
+        skuInfoUp.setIsNewPerson(status);
+        skuInfoMapper.updateById(skuInfoUp);
+    }
+
 
 }
