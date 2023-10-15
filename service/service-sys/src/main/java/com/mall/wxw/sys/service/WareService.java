@@ -1,8 +1,11 @@
 package com.mall.wxw.sys.service;
 
 
+import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.mall.wxw.model.sys.Ware;
+import com.mall.wxw.vo.product.WareQueryVo;
 
 /**
  * <p>
@@ -14,4 +17,5 @@ import com.mall.wxw.model.sys.Ware;
  */
 public interface WareService extends IService<Ware> {
 
+    IPage<Ware> selectWarePage(Page<Ware> pageParam, WareQueryVo wareQueryVo);
 }

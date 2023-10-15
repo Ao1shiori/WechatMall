@@ -67,6 +67,15 @@ public class RegionWareController {
         return Result.fail(null);
     }
 
+    @ApiOperation("修改区域状态")
+    @PostMapping("/updateStatus/{id}/{status}")
+    public Result updateStatus(@PathVariable Long id,
+                               @PathVariable Integer status){
+        regionWareService.updateStatus(id,status);
+        return Result.ok(null);
+    }
+
+
     @ApiOperation("批量删除区域")
     @DeleteMapping("/batchRemove")
     public Result removeRows(@RequestBody List<Long> idList){
