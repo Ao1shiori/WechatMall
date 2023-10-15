@@ -4,6 +4,8 @@ package com.mall.wxw.product.service;
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.mall.wxw.model.product.Attr;
 
+import java.util.List;
+
 /**
  * <p>
  * 商品属性 服务类
@@ -14,4 +16,5 @@ import com.mall.wxw.model.product.Attr;
  */
 public interface AttrService extends IService<Attr> {
 
+    List<Attr> findByAttrGroupId(Long attrGroupId);
 }
