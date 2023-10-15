@@ -1,8 +1,13 @@
 package com.mall.wxw.product.service;
 
 
+import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.mall.wxw.model.product.AttrGroup;
+import com.mall.wxw.vo.product.AttrGroupQueryVo;
+
+import java.util.List;
 
 /**
  * <p>
@@ -14,4 +19,7 @@ import com.mall.wxw.model.product.AttrGroup;
  */
 public interface AttrGroupService extends IService<AttrGroup> {
 
+    IPage<AttrGroup> selectAttrGroupPage(Page<AttrGroup> pageParam, AttrGroupQueryVo attrGroupQueryVo);
+
+    List<AttrGroup> findAllList();
 }
