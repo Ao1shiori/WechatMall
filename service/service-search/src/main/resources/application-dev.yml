@@ -15,10 +15,10 @@ spring:
     rest:
       uris: http://localhost:9200
   rabbitmq:
-    host: 192.168.197.128
+    host: 192.168.44.128
     port: 5672
-    username: guest
-    password: guest
+    username: admin
+    password: admin
     publisher-confirm-type: CORRELATED
     publisher-returns: true
     listener:

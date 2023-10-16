@@ -9,6 +9,8 @@ import com.mall.wxw.model.product.SkuAttrValue;
 import com.mall.wxw.model.product.SkuImage;
 import com.mall.wxw.model.product.SkuInfo;
 import com.mall.wxw.model.product.SkuPoster;
+import com.mall.wxw.mq.constant.MqConst;
+import com.mall.wxw.mq.service.RabbitService;
 import com.mall.wxw.product.mapper.SkuInfoMapper;
 import com.mall.wxw.product.service.SkuAttrValueService;
 import com.mall.wxw.product.service.SkuImageService;
@@ -46,6 +48,9 @@ public class SkuInfoServiceImpl extends ServiceImpl<SkuInfoMapper, SkuInfo> impl
 
     @Resource
     private SkuInfoMapper skuInfoMapper;
+
+    @Resource
+    private RabbitService rabbitService;
 
     //获取sku分页列表
     @Override
@@ -189,13 +194,15 @@ public class SkuInfoServiceImpl extends ServiceImpl<SkuInfoMapper, SkuInfo> impl
             skuInfoUp.setId(skuId);
             skuInfoUp.setPublishStatus(1);
             skuInfoMapper.updateById(skuInfoUp);
-            //TODO 商品上架 后续会完善：发送mq消息更新es数据
+            //商品上架 发送mq消息更新es数据
+            rabbitService.sendMessage(MqConst.EXCHANGE_GOODS_DIRECT,MqConst.ROUTING_GOODS_UPPER,skuId);
         } else {
             SkuInfo skuInfoUp = new SkuInfo();
             skuInfoUp.setId(skuId);
             skuInfoUp.setPublishStatus(0);
             skuInfoMapper.updateById(skuInfoUp);
-            //TODO 商品下架 后续会完善：发送mq消息更新es数据
+            //商品下架 发送mq消息更新es数据
+            rabbitService.sendMessage(MqConst.EXCHANGE_GOODS_DIRECT,MqConst.ROUTING_GOODS_LOWER,skuId);
         }
     }
 

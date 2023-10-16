@@ -9,6 +9,7 @@
         <outputRelativeToContentRoot value="true" />
         <module name="common-util" />
         <module name="service-product-client" />
+        <module name="rabbit_util" />
         <module name="service-product" />
         <module name="service-sys" />
         <module name="service-search" />
@@ -23,6 +24,7 @@
     <option name="ADDITIONAL_OPTIONS_OVERRIDE">
       <module name="common-util" options="-parameters" />
       <module name="model" options="-parameters" />
+      <module name="rabbit_util" options="-parameters" />
       <module name="service" options="-parameters" />
       <module name="service-acl" options="-parameters" />
       <module name="service-client" options="-parameters" />
