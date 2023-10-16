@@ -32,6 +32,6 @@ spring:
 
 aliyun:
   endpoint: oss-cn-beijing.aliyuncs.com
-  keyid: LTAI5t6JcREJhN6CVLZ5Na7N
-  keysecret: XJb8e5MTCPB3BSKE2x9W2MZsagSjAd
+  keyid: 111111111111111111
+  keysecret: 111111111111111111111111
   bucketname: wxw-mall
