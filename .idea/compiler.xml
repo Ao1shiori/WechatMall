@@ -12,6 +12,7 @@
         <module name="service-gateway" />
         <module name="rabbit_util" />
         <module name="service-product" />
+        <module name="service-user" />
         <module name="service-sys" />
         <module name="service-search" />
         <module name="model" />
@@ -36,6 +37,7 @@
       <module name="service-product-client" options="-parameters" />
       <module name="service-search" options="-parameters" />
       <module name="service-sys" options="-parameters" />
+      <module name="service-user" options="-parameters" />
       <module name="service-util" options="-parameters" />
     </option>
   </component>
