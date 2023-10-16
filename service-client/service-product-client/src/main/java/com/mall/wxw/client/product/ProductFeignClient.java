@@ -39,4 +39,12 @@ public interface ProductFeignClient {
      */
     @GetMapping("/api/product/inner/findSkuInfoByKeyword/{keyword}")
     List<SkuInfo> findSkuInfoByKeyword(@PathVariable("keyword") String keyword);
+
+    /**
+     * 批量获取分类信息
+     * @param categoryIdList
+     * @return
+     */
+    @PostMapping("/api/product/inner/findCategoryList")
+    List<Category> findCategoryList(@RequestBody List<Long> categoryIdList);
 }

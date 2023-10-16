@@ -15,7 +15,6 @@ import java.util.List;
  * @Time: 2023/10/15  13:50
  */
 @RestController
-@CrossOrigin
 @Api(tags = "菜单管理")
 @RequestMapping("/admin/acl/permission")
 public class PermissionController {

@@ -19,7 +19,6 @@ import java.util.List;
  * @author wxw
  * @since 2023-10-15
  */
-@CrossOrigin
 @Api(tags = "区域接口")
 @RestController
 @RequestMapping("/admin/sys/region")

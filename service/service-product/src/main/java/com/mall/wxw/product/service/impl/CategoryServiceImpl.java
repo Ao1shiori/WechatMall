@@ -42,4 +42,6 @@ public class CategoryServiceImpl extends ServiceImpl<CategoryMapper, Category> i
         queryWrapper.orderByAsc(Category::getSort);
         return this.list(queryWrapper);
     }
+
+
 }

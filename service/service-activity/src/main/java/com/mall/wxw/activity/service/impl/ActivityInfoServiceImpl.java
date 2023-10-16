@@ -109,6 +109,10 @@ public class ActivityInfoServiceImpl extends ServiceImpl<ActivityInfoMapper, Act
     public List<SkuInfo> findSkuInfoByKeyword(String keyword) {
         //根据关键字查询sku匹配内容列表
         List<SkuInfo> skuInfoList = productFeignClient.findSkuInfoByKeyword(keyword);
+        //查不到匹配内容返回空集合
+        if (skuInfoList.size()==0){
+            return skuInfoList;
+        }
         List<Long> skuIdList = skuInfoList.stream().map(SkuInfo::getId).collect(Collectors.toList());
 
         List<Long> existSkuIdList = baseMapper.selectSkuIdListExist(skuIdList);

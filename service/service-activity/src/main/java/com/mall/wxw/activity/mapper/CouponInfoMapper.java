@@ -3,6 +3,7 @@ package com.mall.wxw.activity.mapper;
 
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.mall.wxw.model.activity.CouponInfo;
+import org.springframework.stereotype.Repository;
 
 /**
  * <p>

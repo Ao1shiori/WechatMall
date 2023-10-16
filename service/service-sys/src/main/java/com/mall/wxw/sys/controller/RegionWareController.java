@@ -23,7 +23,6 @@ import java.util.List;
  * @since 2023-10-15
  */
 @Api(tags = "区域仓库接口")
-@CrossOrigin
 @RestController
 @RequestMapping("/admin/sys/regionWare")
 public class RegionWareController {

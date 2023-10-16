@@ -27,7 +27,6 @@ import java.util.List;
 @Api(value = "SkuInfo管理", tags = "商品Sku管理")
 @RestController
 @RequestMapping(value="/admin/product/skuInfo")
-@CrossOrigin
 public class SkuInfoController {
     @Resource
     private SkuInfoService skuInfoService;
