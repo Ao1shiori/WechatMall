@@ -15,6 +15,7 @@
         <module>service-acl</module>
         <module>service-sys</module>
         <module>service-product</module>
+        <module>service-search</module>
     </modules>
 
     <dependencies>
@@ -55,7 +56,7 @@
             <artifactId>spring-cloud-starter-alibaba-nacos-discovery</artifactId>
         </dependency>
 
-        <!-- 服务调用feign -->
+        <!-- 服务远程调用feign -->
         <dependency>
             <groupId>org.springframework.cloud</groupId>
             <artifactId>spring-cloud-starter-openfeign</artifactId>
