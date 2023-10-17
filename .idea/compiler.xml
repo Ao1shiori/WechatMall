@@ -20,6 +20,7 @@
         <module name="service-acl" />
         <module name="service-product" />
         <module name="service-user" />
+        <module name="service-cart" />
         <module name="service-search" />
         <module name="model" />
         <module name="service-activity" />
@@ -36,6 +37,7 @@
       <module name="service-acl" options="-parameters" />
       <module name="service-activity" options="-parameters" />
       <module name="service-activity-client" options="-parameters" />
+      <module name="service-cart" options="-parameters" />
       <module name="service-client" options="-parameters" />
       <module name="service-gateway" options="-parameters" />
       <module name="service-home" options="-parameters" />
