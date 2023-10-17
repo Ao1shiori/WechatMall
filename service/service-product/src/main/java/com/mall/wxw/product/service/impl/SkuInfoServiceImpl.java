@@ -228,5 +228,20 @@ public class SkuInfoServiceImpl extends ServiceImpl<SkuInfoMapper, SkuInfo> impl
         return baseMapper.selectList(queryWrapper);
     }
 
+    @Override
+    public List<SkuInfo> findNewPersonList() {
+        LambdaQueryWrapper<SkuInfo> wrapper = new LambdaQueryWrapper<>();
+        //是否新人专享
+        wrapper.eq(SkuInfo::getIsNewPerson,1);
+        //是否上架状态
+        wrapper.eq(SkuInfo::getPublishStatus,1);
+        //根据库存显示前三个
+        wrapper.orderByDesc(SkuInfo::getStock);
+        //第一页的三条
+        Page<SkuInfo> pageParam = new Page<>(1, 3);
+        Page<SkuInfo> skuInfoPage = baseMapper.selectPage(pageParam, wrapper);
+        return skuInfoPage.getRecords();
+    }
+
 
 }

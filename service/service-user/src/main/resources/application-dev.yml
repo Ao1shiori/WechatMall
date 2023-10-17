@@ -2,7 +2,7 @@ server:
   port: 8206
 
 mybatis-plus:
-  type-enums-package: com.atguigu.ssyx.enums
+  type-enums-package: com.mall.wxw.enums
   configuration:
     log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
 

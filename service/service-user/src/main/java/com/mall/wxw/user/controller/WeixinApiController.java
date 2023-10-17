@@ -1,6 +1,7 @@
 package com.mall.wxw.user.controller;
 
 import com.alibaba.fastjson.JSONObject;
+import com.mall.wxw.common.auth.AuthContextHolder;
 import com.mall.wxw.common.constant.RedisConst;
 import com.mall.wxw.common.exception.MallException;
 import com.mall.wxw.common.result.Result;
@@ -15,10 +16,7 @@ import com.mall.wxw.vo.user.LeaderAddressVo;
 import com.mall.wxw.vo.user.UserLoginVo;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.data.redis.core.RedisTemplate;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
 import java.util.HashMap;
@@ -26,7 +24,7 @@ import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
 @RestController
-@RequestMapping("/api/user/weixin/wxLogin")
+@RequestMapping("/api/user/weixin")
 public class WeixinApiController {
 
     @Resource
@@ -90,5 +88,16 @@ public class WeixinApiController {
         map.put("token",token);
         map.put("leaderAddressVo",leaderAddressVo);
         return Result.ok(map);
+    }
+
+    @PostMapping("/auth/updateUser")
+    @ApiOperation(value = "更新用户昵称与头像")
+    public Result updateUser(@RequestBody User user) {
+        User user1 = userService.getById(AuthContextHolder.getUserId());
+        //把昵称更新为微信用户
+        user1.setNickName(user.getNickName().replaceAll("[ue000-uefff]", "*"));
+        user1.setPhotoUrl(user.getPhotoUrl());
+        userService.updateById(user1);
+        return Result.ok(null);
     }
 }

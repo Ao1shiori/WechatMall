@@ -7,9 +7,13 @@ import com.mall.wxw.model.product.SkuInfo;
 import com.mall.wxw.model.search.SkuEs;
 import com.mall.wxw.search.repository.SkuRepository;
 import com.mall.wxw.search.service.SkuService;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
+import java.util.List;
 
 /**
  * @author: wxw24633
@@ -57,5 +61,12 @@ public class SkuServiceImpl implements SkuService {
     @Override
     public void lowerSku(Long skuId) {
         skuRepository.deleteById(skuId);
+    }
+
+    @Override
+    public List<SkuEs> findHotSkuList() {
+        Pageable pageable = PageRequest.of(0, 10);
+        Page<SkuEs> pageModel = skuRepository.findByOrderByHotScoreDesc(pageable);
+        return pageModel.getContent();
     }
 }

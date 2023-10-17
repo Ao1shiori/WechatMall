@@ -2,6 +2,7 @@ package com.mall.wxw.client.product;
 
 import com.mall.wxw.model.product.Category;
 import com.mall.wxw.model.product.SkuInfo;
+import io.swagger.annotations.ApiOperation;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -47,4 +48,12 @@ public interface ProductFeignClient {
      */
     @PostMapping("/api/product/inner/findCategoryList")
     List<Category> findCategoryList(@RequestBody List<Long> categoryIdList);
+
+    @ApiOperation(value = "获取分类信息")
+    @GetMapping("/api/product/inner/findAllCategoryList")
+    List<Category> findAllCategoryList();
+
+    @ApiOperation(value = "获取新人专享")
+    @GetMapping("/api/product/inner/findNewPersonSkuInfoList")
+    public List<SkuInfo> findNewPersonSkuInfoList();
 }
