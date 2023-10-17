@@ -16,6 +16,7 @@
         <module name="service-sys" />
         <module name="service-user-client" />
         <module name="service-util" />
+        <module name="service-activity-client" />
         <module name="service-acl" />
         <module name="service-product" />
         <module name="service-user" />
@@ -34,6 +35,7 @@
       <module name="service" options="-parameters" />
       <module name="service-acl" options="-parameters" />
       <module name="service-activity" options="-parameters" />
+      <module name="service-activity-client" options="-parameters" />
       <module name="service-client" options="-parameters" />
       <module name="service-gateway" options="-parameters" />
       <module name="service-home" options="-parameters" />

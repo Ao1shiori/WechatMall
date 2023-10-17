@@ -14,4 +14,9 @@ import org.springframework.stereotype.Repository;
 public interface SkuRepository extends ElasticsearchRepository<SkuEs, Long> {
 
     Page<SkuEs> findByOrderByHotScoreDesc(Pageable pageable);
+
+
+    Page<SkuEs> findByCategoryIdAndWareId(Long categoryId, Long wareId, Pageable pageable);
+
+    Page<SkuEs> findByKeywordAndWareId(String keyword, Long wareId, Pageable pageable);
 }

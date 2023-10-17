@@ -3,8 +3,12 @@ package com.mall.wxw.search.controller;
 import com.mall.wxw.common.result.Result;
 import com.mall.wxw.model.search.SkuEs;
 import com.mall.wxw.search.service.SkuService;
+import com.mall.wxw.vo.search.SkuEsQueryVo;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -43,6 +47,16 @@ public class SkuApiController {
     @GetMapping("inner/findHotSkuList")
     public List<SkuEs> findHotSkuList() {
         return skuService.findHotSkuList();
+    }
+
+    @GetMapping("{page}/{limit}")
+    @ApiOperation("查询分类商品")
+    public Result listSku(@PathVariable Long page,
+                          @PathVariable Long limit,
+                          SkuEsQueryVo skuEsQueryVo){
+        Pageable pageable = PageRequest.of(page.intValue()-1, limit.intValue());
+        Page<SkuEs> pageModel = skuService.search(pageable,skuEsQueryVo);
+        return Result.ok(pageModel);
     }
 
 }

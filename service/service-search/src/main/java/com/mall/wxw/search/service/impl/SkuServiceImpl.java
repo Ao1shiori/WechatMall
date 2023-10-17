@@ -1,19 +1,26 @@
 package com.mall.wxw.search.service.impl;
 
+import com.mall.wxw.client.activity.ActivityFeignClient;
 import com.mall.wxw.client.product.ProductFeignClient;
+import com.mall.wxw.common.auth.AuthContextHolder;
 import com.mall.wxw.enums.SkuType;
 import com.mall.wxw.model.product.Category;
 import com.mall.wxw.model.product.SkuInfo;
 import com.mall.wxw.model.search.SkuEs;
 import com.mall.wxw.search.repository.SkuRepository;
 import com.mall.wxw.search.service.SkuService;
+import com.mall.wxw.vo.search.SkuEsQueryVo;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import org.springframework.util.CollectionUtils;
+import org.springframework.util.StringUtils;
 
 import javax.annotation.Resource;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 /**
  * @author: wxw24633
@@ -26,6 +33,9 @@ public class SkuServiceImpl implements SkuService {
 
     @Resource
     private ProductFeignClient productFeignClient;
+
+    @Resource
+    private ActivityFeignClient activityFeignClient;
 
     @Override
     public void upperSku(Long skuId) {
@@ -68,5 +78,30 @@ public class SkuServiceImpl implements SkuService {
         Pageable pageable = PageRequest.of(0, 10);
         Page<SkuEs> pageModel = skuRepository.findByOrderByHotScoreDesc(pageable);
         return pageModel.getContent();
+    }
+
+    @Override
+    public Page<SkuEs> search(Pageable pageable, SkuEsQueryVo skuEsQueryVo) {
+        skuEsQueryVo.setWareId(AuthContextHolder.getWareId());
+        Page<SkuEs> page;
+        if(StringUtils.isEmpty(skuEsQueryVo.getKeyword())) {
+            page = skuRepository.findByCategoryIdAndWareId(skuEsQueryVo.getCategoryId(), skuEsQueryVo.getWareId(), pageable);
+        } else {
+            page = skuRepository.findByKeywordAndWareId(skuEsQueryVo.getKeyword(), skuEsQueryVo.getWareId(), pageable);
+        }
+        List<SkuEs> skuEsList =  page.getContent();
+        //获取sku对应的促销活动标签
+        if(!CollectionUtils.isEmpty(skuEsList)) {
+            List<Long> skuIdList = skuEsList.stream().map(sku -> sku.getId()).collect(Collectors.toList());
+            //一个商品参加的活动会有多个规则
+            Map<Long, List<String>> skuIdToRuleListMap = activityFeignClient.findActivity(skuIdList);
+            //封装规则到skuEs中
+            if(null != skuIdToRuleListMap) {
+                skuEsList.forEach(skuEs -> {
+                    skuEs.setRuleList(skuIdToRuleListMap.get(skuEs.getId()));
+                });
+            }
+        }
+        return page;
     }
 }

@@ -11,12 +11,14 @@ import com.mall.wxw.activity.mapper.ActivityRuleMapper;
 import com.mall.wxw.activity.mapper.ActivitySkuMapper;
 import com.mall.wxw.activity.service.ActivityInfoService;
 import com.mall.wxw.client.product.ProductFeignClient;
+import com.mall.wxw.enums.ActivityType;
 import com.mall.wxw.model.activity.ActivityInfo;
 import com.mall.wxw.model.activity.ActivityRule;
 import com.mall.wxw.model.activity.ActivitySku;
 import com.mall.wxw.model.product.SkuInfo;
 import com.mall.wxw.vo.activity.ActivityRuleVo;
 import org.springframework.stereotype.Service;
+import org.springframework.util.CollectionUtils;
 
 import javax.annotation.Resource;
 import java.util.ArrayList;
@@ -129,6 +131,48 @@ public class ActivityInfoServiceImpl extends ServiceImpl<ActivityInfoMapper, Act
 
     @Override
     public List<ActivityRule> findActivityRule(Long skuId) {
-        return null;
+        return baseMapper.findActivityRule(skuId);
+    }
+
+    @Override
+    public Map<Long, List<String>> findActivity(List<Long> skuIdList) {
+        Map<Long, List<String>> result = new HashMap<>();
+        //遍历skuIdList
+        skuIdList.forEach(skuId ->{
+            //查询skuId对应活动的规则列表
+            List<ActivityRule> activityRuleList = baseMapper.findActivityRule(skuId);
+            //封装数据
+            if (!CollectionUtils.isEmpty(activityRuleList)){
+                List<String> ruleList = new ArrayList<>();
+                //处理规则名称
+                for (ActivityRule activityRule : activityRuleList) {
+                    ruleList.add(getRuleDesc(activityRule));
+                }
+                result.put(skuId,ruleList);
+            }
+        });
+        return result;
+    }
+
+    //构造规则名称的方法
+    private String getRuleDesc(ActivityRule activityRule) {
+        ActivityType activityType = activityRule.getActivityType();
+        StringBuilder ruleDesc = new StringBuilder();
+        if (activityType == ActivityType.FULL_REDUCTION) {
+            ruleDesc
+                    .append("满")
+                    .append(activityRule.getConditionAmount())
+                    .append("元减")
+                    .append(activityRule.getBenefitAmount())
+                    .append("元");
+        } else {
+            ruleDesc
+                    .append("满")
+                    .append(activityRule.getConditionNum())
+                    .append("元打")
+                    .append(activityRule.getBenefitDiscount())
+                    .append("折");
+        }
+        return ruleDesc.toString();
     }
 }
