@@ -4,6 +4,7 @@ import com.mall.wxw.model.product.Category;
 import com.mall.wxw.model.product.SkuInfo;
 import com.mall.wxw.product.service.CategoryService;
 import com.mall.wxw.product.service.SkuInfoService;
+import com.mall.wxw.vo.product.SkuInfoVo;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.web.bind.annotation.*;
@@ -66,5 +67,11 @@ public class ProductInnerController {
     @GetMapping("inner/findNewPersonSkuInfoList")
     public List<SkuInfo> findNewPersonSkuInfoList() {
         return skuInfoService.findNewPersonList();
+    }
+
+    @ApiOperation(value = "根据skuId获取sku信息")
+    @GetMapping("inner/getSkuInfoVo/{skuId}")
+    public SkuInfoVo getSkuInfoVo(@PathVariable("skuId") Long skuId) {
+        return skuInfoService.getSkuInfoVo(skuId);
     }
 }

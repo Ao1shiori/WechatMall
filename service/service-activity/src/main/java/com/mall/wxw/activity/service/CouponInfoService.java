@@ -33,4 +33,6 @@ public interface CouponInfoService extends IService<CouponInfo> {
 
     //根据关键字获取sku列表，活动使用
     List<CouponInfo> findCouponByKeyword(String keyword);
+
+    List<CouponInfo> findCouponInfoList(Long skuId, Long userId);
 }

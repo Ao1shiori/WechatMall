@@ -50,4 +50,6 @@ public interface ActivityInfoService extends IService<ActivityInfo> {
     List<ActivityRule> findActivityRule(Long skuId);
 
     Map<Long, List<String>> findActivity(List<Long> skuIdList);
+
+    Map<String, Object> findActivityAndCoupon(Long skuId, Long userId);
 }

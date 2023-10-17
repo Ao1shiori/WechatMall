@@ -138,4 +138,12 @@ public class CouponInfoServiceImpl extends ServiceImpl<CouponInfoMapper, CouponI
         couponInfoQueryWrapper.like("coupon_name",keyword);
         return couponInfoMapper.selectList(couponInfoQueryWrapper);
     }
+
+    @Override
+    public List<CouponInfo> findCouponInfoList(Long skuId, Long userId) {
+        //skuid获取skuInfo
+        SkuInfo skuInfo = productFeignClient.getSkuInfo(skuId);
+        //条件查询skuid 分类id userid
+        return baseMapper.selectCouponInfoList(skuId,skuInfo.getCategoryId(),userId);
+    }
 }

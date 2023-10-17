@@ -20,4 +20,6 @@ public interface SkuService {
 
     //分类信息
     Page<SkuEs> search(Pageable pageable, SkuEsQueryVo skuEsQueryVo);
+
+    void incrHotScore(Long skuId);
 }

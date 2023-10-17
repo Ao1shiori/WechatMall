@@ -10,11 +10,13 @@ import com.mall.wxw.activity.mapper.ActivityInfoMapper;
 import com.mall.wxw.activity.mapper.ActivityRuleMapper;
 import com.mall.wxw.activity.mapper.ActivitySkuMapper;
 import com.mall.wxw.activity.service.ActivityInfoService;
+import com.mall.wxw.activity.service.CouponInfoService;
 import com.mall.wxw.client.product.ProductFeignClient;
 import com.mall.wxw.enums.ActivityType;
 import com.mall.wxw.model.activity.ActivityInfo;
 import com.mall.wxw.model.activity.ActivityRule;
 import com.mall.wxw.model.activity.ActivitySku;
+import com.mall.wxw.model.activity.CouponInfo;
 import com.mall.wxw.model.product.SkuInfo;
 import com.mall.wxw.vo.activity.ActivityRuleVo;
 import org.springframework.stereotype.Service;
@@ -50,6 +52,8 @@ public class ActivityInfoServiceImpl extends ServiceImpl<ActivityInfoMapper, Act
     @Resource
     private ProductFeignClient productFeignClient;
 
+    @Resource
+    private CouponInfoService couponInfoService;
 
     @Override
     public IPage<ActivityInfo> selectPage(Page<ActivityInfo> pageParam) {
@@ -70,7 +74,13 @@ public class ActivityInfoServiceImpl extends ServiceImpl<ActivityInfoMapper, Act
         QueryWrapper<ActivityRule> queryWrapper = new QueryWrapper<>();
         queryWrapper.eq("activity_id",activityId);
         List<ActivityRule> activityRuleList = activityRuleMapper.selectList(queryWrapper);
-        result.put("activityRuleList", activityRuleList);
+
+        //处理规则名称
+        List<String> ruleList = new ArrayList<>();
+        for (ActivityRule activityRule : activityRuleList) {
+            ruleList.add(getRuleDesc(activityRule));
+        }
+        result.put("activityRuleList", ruleList);
 
         List<ActivitySku> activitySkuList = activitySkuMapper.selectList
                 (new QueryWrapper<ActivitySku>().eq("activity_id",activityId));
@@ -151,6 +161,19 @@ public class ActivityInfoServiceImpl extends ServiceImpl<ActivityInfoMapper, Act
                 result.put(skuId,ruleList);
             }
         });
+        return result;
+    }
+
+    @Override
+    public Map<String, Object> findActivityAndCoupon(Long skuId, Long userId) {
+        ActivitySku activitySku = activitySkuMapper.selectOne(new LambdaQueryWrapper<ActivitySku>().eq(ActivitySku::getSkuId, skuId));
+        //skuid获取sku营销活动 一个活动多个规则
+        Map<String, Object> activityRuleList = this.findActivityRuleList(activitySku.getActivityId());
+        //skuid和userid查优惠券信息
+        List<CouponInfo> couponInfoList = couponInfoService.findCouponInfoList(skuId,userId);
+        //封装返回
+        Map<String, Object> result = new HashMap<>(activityRuleList);
+        result.put("couponInfoList",couponInfoList);
         return result;
     }
 
