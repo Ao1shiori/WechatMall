@@ -5,6 +5,7 @@ import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.mall.wxw.model.activity.CouponInfo;
+import com.mall.wxw.model.order.CartInfo;
 import com.mall.wxw.vo.activity.CouponRuleVo;
 
 import java.util.List;
@@ -35,4 +36,6 @@ public interface CouponInfoService extends IService<CouponInfo> {
     List<CouponInfo> findCouponByKeyword(String keyword);
 
     List<CouponInfo> findCouponInfoList(Long skuId, Long userId);
+
+    List<CouponInfo> findCartCouponInfo(List<CartInfo> cartInfoList, Long userId);
 }

@@ -1,8 +1,11 @@
 package com.mall.wxw.cart.controller;
 
 import com.mall.wxw.cart.service.CartInfoService;
+import com.mall.wxw.client.activity.ActivityFeignClient;
 import com.mall.wxw.common.auth.AuthContextHolder;
 import com.mall.wxw.common.result.Result;
+import com.mall.wxw.model.order.CartInfo;
+import com.mall.wxw.vo.order.OrderConfirmVo;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.web.bind.annotation.*;
 
@@ -20,6 +23,9 @@ public class CarApiController {
 
     @Resource
     private CartInfoService cartInfoService;
+
+    @Resource
+    private ActivityFeignClient activityFeignClient;
 
     /**
      * 添加购物车
@@ -69,5 +75,35 @@ public class CarApiController {
         Long userId = AuthContextHolder.getUserId();
         cartInfoService.batchDeleteCart(skuIdList, userId);
         return Result.ok(null);
+    }
+
+    /**
+     * 查询购物车列表
+     *
+     * @param request
+     * @return
+     */
+    @GetMapping("cartList")
+    public Result cartList(HttpServletRequest request) {
+        // 获取用户Id
+        Long userId = AuthContextHolder.getUserId();
+        List<CartInfo> cartInfoList = cartInfoService.getCartList(userId);
+        return Result.ok(cartInfoList);
+    }
+
+    /**
+     * 查询带优惠卷的购物车
+     *
+     * @param request
+     * @return
+     */
+    @GetMapping("activityCartList")
+    public Result activityCartList(HttpServletRequest request) {
+        // 获取用户Id
+        Long userId = AuthContextHolder.getUserId();
+        List<CartInfo> cartInfoList = cartInfoService.getCartList(userId);
+
+        OrderConfirmVo orderTradeVo = activityFeignClient.findCartActivityAndCoupon(cartInfoList, userId);
+        return Result.ok(orderTradeVo);
     }
 }

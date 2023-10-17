@@ -1,5 +1,7 @@
 package com.mall.wxw.cart.service;
 
+import com.mall.wxw.model.order.CartInfo;
+
 import java.util.List;
 
 /**
@@ -14,4 +16,6 @@ public interface CartInfoService {
     void deleteAllCart(Long userId);
 
     void batchDeleteCart(List<Long> skuIdList, Long userId);
+
+    List<CartInfo> getCartList(Long userId);
 }

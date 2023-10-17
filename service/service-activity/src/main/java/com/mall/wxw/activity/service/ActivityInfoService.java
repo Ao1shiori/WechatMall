@@ -6,8 +6,11 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.mall.wxw.model.activity.ActivityInfo;
 import com.mall.wxw.model.activity.ActivityRule;
+import com.mall.wxw.model.order.CartInfo;
 import com.mall.wxw.model.product.SkuInfo;
 import com.mall.wxw.vo.activity.ActivityRuleVo;
+import com.mall.wxw.vo.order.CartInfoVo;
+import com.mall.wxw.vo.order.OrderConfirmVo;
 
 import java.util.List;
 import java.util.Map;
@@ -52,4 +55,9 @@ public interface ActivityInfoService extends IService<ActivityInfo> {
     Map<Long, List<String>> findActivity(List<Long> skuIdList);
 
     Map<String, Object> findActivityAndCoupon(Long skuId, Long userId);
+
+    OrderConfirmVo findCartActivityAndCoupon(List<CartInfo> cartInfoList, Long userId);
+
+    //购物车对应规则数据
+    List<CartInfoVo> findCartActivityList(List<CartInfo> cartInfoList);
 }

@@ -37,14 +37,14 @@ public class ItemServiceImpl implements ItemService {
         Map<String, Object> result = new HashMap<>();
         //skuid查询
         CompletableFuture<SkuInfoVo> skuInfoVoCompletableFuture = CompletableFuture.supplyAsync(() -> {
-            //远程调用
+            //rpc
             SkuInfoVo skuInfoVo = productFeignClient.getSkuInfoVo(skuId);
             result.put("skuInfoVo",skuInfoVo);
             return skuInfoVo;
         },threadPoolExecutor);
         //sku对应优惠券信息
         CompletableFuture<Void> activityCompletableFuture = CompletableFuture.runAsync(() -> {
-            //远程调用
+            //rpc
             Map<String,Object> activityMap = activityFeignClient.findActivityAndCoupon(skuId,userId);
             result.putAll(activityMap);
         },threadPoolExecutor);

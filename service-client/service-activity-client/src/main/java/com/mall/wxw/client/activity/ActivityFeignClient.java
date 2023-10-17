@@ -1,5 +1,7 @@
 package com.mall.wxw.client.activity;
 
+import com.mall.wxw.model.order.CartInfo;
+import com.mall.wxw.vo.order.OrderConfirmVo;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -20,4 +22,8 @@ public interface ActivityFeignClient {
     @ApiOperation(value = "根据skuId获取促销与优惠券信息")
     @GetMapping("/api/activity/inner/findActivityAndCoupon/{skuId}/{userId}")
     Map<String, Object> findActivityAndCoupon(@PathVariable Long skuId, @PathVariable("userId") Long userId);
+
+    @ApiOperation(value = "获取购物车满足条件的促销与优惠券信息")
+    @PostMapping("/api/activity/inner/findCartActivityAndCoupon/{userId}")
+    OrderConfirmVo findCartActivityAndCoupon(@RequestBody List<CartInfo> cartInfoList, @PathVariable("userId") Long userId);
 }
