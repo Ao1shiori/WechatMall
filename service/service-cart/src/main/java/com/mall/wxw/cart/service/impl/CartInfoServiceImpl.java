@@ -145,4 +145,39 @@ public class CartInfoServiceImpl implements CartInfoService {
         }
         return cartInfoList;
     }
+
+    @Override
+    public void checkCart(Long userId, Integer isChecked, Long skuId) {
+        String cartKey = this.getCartKey(userId);
+        BoundHashOperations<String, String, CartInfo> boundHashOps = this.redisTemplate.boundHashOps(cartKey);
+        CartInfo cartInfo = boundHashOps.get(skuId.toString());
+        if(null != cartInfo) {
+            cartInfo.setIsChecked(isChecked);
+            boundHashOps.put(skuId.toString(), cartInfo);
+            this.setCartKeyExpire(cartKey);
+        }
+    }
+
+    @Override
+    public void checkAllCart(Long userId, Integer isChecked) {
+        String cartKey = this.getCartKey(userId);
+        BoundHashOperations<String, String, CartInfo> boundHashOps = this.redisTemplate.boundHashOps(cartKey);
+        boundHashOps.values().forEach(cartInfo -> {
+            cartInfo.setIsChecked(isChecked);
+            boundHashOps.put(cartInfo.getSkuId().toString(), cartInfo);
+        });
+        this.setCartKeyExpire(cartKey);
+    }
+
+    @Override
+    public void batchCheckCart(List<Long> skuIdList, Long userId, Integer isChecked) {
+        String cartKey = getCartKey(userId);
+        //获取缓存对象
+        BoundHashOperations<String, String, CartInfo> hashOperations = redisTemplate.boundHashOps(cartKey);
+        skuIdList.forEach(skuId -> {
+            CartInfo cartInfo = hashOperations.get(skuId.toString());
+            cartInfo.setIsChecked(isChecked);
+            hashOperations.put(cartInfo.getSkuId().toString(), cartInfo);
+        });
+    }
 }
