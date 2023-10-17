@@ -1,6 +1,7 @@
 package com.mall.wxw.search.controller;
 
 import com.mall.wxw.common.result.Result;
+import com.mall.wxw.model.search.SkuEs;
 import com.mall.wxw.search.service.SkuService;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
@@ -10,6 +11,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import javax.annotation.Resource;
+import java.util.List;
 
 /**
  * @author: wxw24633
@@ -34,6 +36,13 @@ public class SkuApiController {
     public Result lowerSku(@PathVariable Long skuId){
         skuService.lowerSku(skuId);
         return Result.ok(null);
+    }
+
+    //获取爆款商品
+    @ApiOperation(value = "获取爆品商品")
+    @GetMapping("inner/findHotSkuList")
+    public List<SkuEs> findHotSkuList() {
+        return skuService.findHotSkuList();
     }
 
 }
