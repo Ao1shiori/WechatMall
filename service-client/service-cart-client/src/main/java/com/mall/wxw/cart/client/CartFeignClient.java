@@ -20,4 +20,6 @@ public interface CartFeignClient {
      */
     @GetMapping("/api/cart/inner/getCartCheckedList/{userId}")
     List<CartInfo> getCartCheckedList(@PathVariable("userId") Long userId);
+
+
 }

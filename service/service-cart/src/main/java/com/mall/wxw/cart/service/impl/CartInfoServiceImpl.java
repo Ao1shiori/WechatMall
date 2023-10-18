@@ -190,4 +190,21 @@ public class CartInfoServiceImpl implements CartInfoService {
                 .filter((cartInfo) -> cartInfo.getIsChecked() == 1).collect(Collectors.toList());
         return cartInfoCheckList;
     }
+
+    //删除选用的购物车记录
+    @Override
+    public void deleteCartChecked(Long userId) {
+        //根据userid查询选中购物车记录
+        List<CartInfo> cartCheckedList = getCartCheckedList(userId);
+        //根据记录得到skuid集合
+        List<Long> skuIdList = cartCheckedList.stream().map(CartInfo::getSkuId).collect(Collectors.toList());
+        //构建redis的key
+        String cartKey = getCartKey(userId);
+        //根据key查询field value
+        BoundHashOperations<String,String,CartInfo> hashOperations = redisTemplate.boundHashOps(cartKey);
+        //根据key删除redis数据
+        skuIdList.forEach(skuId->{
+            hashOperations.delete(skuId.toString());
+        });
+    }
 }

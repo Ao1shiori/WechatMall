@@ -12,8 +12,10 @@ import com.mall.wxw.activity.mapper.CouponUseMapper;
 import com.mall.wxw.activity.service.CouponInfoService;
 import com.mall.wxw.client.product.ProductFeignClient;
 import com.mall.wxw.enums.CouponRangeType;
+import com.mall.wxw.enums.CouponStatus;
 import com.mall.wxw.model.activity.CouponInfo;
 import com.mall.wxw.model.activity.CouponRange;
+import com.mall.wxw.model.activity.CouponUse;
 import com.mall.wxw.model.order.CartInfo;
 import com.mall.wxw.model.product.Category;
 import com.mall.wxw.model.product.SkuInfo;
@@ -199,6 +201,40 @@ public class CouponInfoServiceImpl extends ServiceImpl<CouponInfoMapper, CouponI
         return userAllCouponInfoList;
     }
 
+    //购物车对应优惠券
+    @Override
+    public CouponInfo findRangeSkuIdList(List<CartInfo> cartInfoList, Long couponId) {
+        //根据couponId查基本信息
+        CouponInfo couponInfo = baseMapper.selectById(couponId);
+        if (couponInfo==null){
+            return null;
+        }
+        //根据couponId查询对应range数据
+        List<CouponRange> couponRangeList = couponRangeMapper
+                .selectList(new LambdaQueryWrapper<CouponRange>().eq(CouponRange::getCouponId, couponId));
+        //对应sku信息
+        Map<Long, List<Long>> couponIdToSkuIdMap = findCouponIdToSkuIdMap(cartInfoList, couponRangeList);
+        //遍历map得到value封装到couponInfo
+        List<Long> skuIdLilt = couponIdToSkuIdMap.entrySet().iterator().next().getValue();
+        couponInfo.setSkuIdList(skuIdLilt);
+        return couponInfo;
+    }
+
+    //更新优惠券状态
+    @Override
+    public void updateCouponInfoUseStatus(Long couponId, Long userId, Long orderId) {
+        //查优惠券信息
+        CouponUse couponUse = couponUseMapper.selectOne(new LambdaQueryWrapper<CouponUse>()
+                .eq(CouponUse::getCouponId, couponId)
+                .eq(CouponUse::getUserId, userId)
+                .eq(CouponUse::getOrderId, orderId)
+        );
+        //设置修改值
+        couponUse.setCouponStatus(CouponStatus.USED);
+        //保存
+        couponUseMapper.updateById(couponUse);
+    }
+
     private BigDecimal computeTotalAmount(List<CartInfo> cartInfoList) {
         BigDecimal total = new BigDecimal("0");
         for (CartInfo cartInfo : cartInfoList) {
@@ -238,4 +274,6 @@ public class CouponInfoServiceImpl extends ServiceImpl<CouponInfoMapper, CouponI
 
         return couponIdToSkuIdMap;
     }
+
+
 }

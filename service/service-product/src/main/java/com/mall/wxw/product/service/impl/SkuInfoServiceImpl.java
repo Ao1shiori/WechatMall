@@ -5,6 +5,9 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.mall.wxw.common.constant.RedisConst;
+import com.mall.wxw.common.exception.MallException;
+import com.mall.wxw.common.result.ResultCodeEnum;
 import com.mall.wxw.model.product.SkuAttrValue;
 import com.mall.wxw.model.product.SkuImage;
 import com.mall.wxw.model.product.SkuInfo;
@@ -18,7 +21,11 @@ import com.mall.wxw.product.service.SkuInfoService;
 import com.mall.wxw.product.service.SkuPosterService;
 import com.mall.wxw.vo.product.SkuInfoQueryVo;
 import com.mall.wxw.vo.product.SkuInfoVo;
+import com.mall.wxw.vo.product.SkuStockLockVo;
+import org.redisson.api.RLock;
+import org.redisson.api.RedissonClient;
 import org.springframework.beans.BeanUtils;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
@@ -51,6 +58,12 @@ public class SkuInfoServiceImpl extends ServiceImpl<SkuInfoMapper, SkuInfo> impl
 
     @Resource
     private RabbitService rabbitService;
+
+    @Resource
+    private RedisTemplate redisTemplate;
+
+    @Resource
+    private RedissonClient redissonClient;
 
     //获取sku分页列表
     @Override
@@ -241,6 +254,50 @@ public class SkuInfoServiceImpl extends ServiceImpl<SkuInfoMapper, SkuInfo> impl
         Page<SkuInfo> pageParam = new Page<>(1, 3);
         Page<SkuInfo> skuInfoPage = baseMapper.selectPage(pageParam, wrapper);
         return skuInfoPage.getRecords();
+    }
+
+    @Override
+    public Boolean checkAndLock(List<SkuStockLockVo> skuStockLockVoList, String orderNo) {
+        //判断集合是否为空
+        if (CollectionUtils.isEmpty(skuStockLockVoList)){
+            throw new MallException(ResultCodeEnum.DATA_ERROR);
+        }
+        //遍历集合得到商品 验证并锁定库存
+        skuStockLockVoList.stream().forEach(skuStockLockVo -> this.checkLock(skuStockLockVo));
+        //一个商品锁定失败全部锁定的商品都解锁
+        boolean flag = skuStockLockVoList.stream().anyMatch(skuStockLockVo -> !skuStockLockVo.getIsLock());
+        if (flag){
+            skuStockLockVoList.stream().filter(SkuStockLockVo::getIsLock)
+                    .forEach(skuStockLockVo -> baseMapper.unlockStock(skuStockLockVo.getSkuId(),skuStockLockVo.getSkuNum()));
+            return false;
+        }
+        //所有商品锁定成功 redis缓存相关数据 方便解锁和减库存
+        redisTemplate.opsForValue().set(RedisConst.SROCK_INFO+orderNo,skuStockLockVoList);
+        return true;
+    }
+    //验证并锁定库存
+    private void checkLock(SkuStockLockVo skuStockLockVo) {
+        //获取锁 公平锁
+        RLock rLock = redissonClient.getFairLock(RedisConst.SKUKEY_PREFIX + skuStockLockVo.getSkuId());
+        //上锁
+        rLock.lock();
+        try{
+            //验证库存
+            SkuInfo skuInfo = baseMapper.checkStock(skuStockLockVo.getSkuId(),skuStockLockVo.getSkuNum());
+            //判断
+            if (skuInfo == null){
+                skuStockLockVo.setIsLock(false);
+                return;
+            }
+            //满足条件锁定库存
+            Integer rows = baseMapper.lockStock(skuStockLockVo.getSkuId(),skuStockLockVo.getSkuNum());
+            if (rows == 1){
+                skuStockLockVo.setIsLock(true);
+            }
+        }finally {
+            //解锁
+            rLock.unlock();
+        }
     }
 
 
