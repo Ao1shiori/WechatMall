@@ -52,5 +52,11 @@ public class OrderInfoController {
         return Result.ok(orderInfo);
     }
 
+    @ApiOperation("获取订单详情")
+    @GetMapping("inner/getOrderInfo/{orderNo}")
+    public OrderInfo getOrderInfo(@PathVariable String orderNo){
+        return orderInfoService.getOrderInfoByOrderNo(orderNo);
+    }
+
 }
 

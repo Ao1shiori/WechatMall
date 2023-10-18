@@ -1,6 +1,7 @@
 package com.mall.wxw.order.service.impl;
 
 
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.mall.wxw.cart.client.CartFeignClient;
 import com.mall.wxw.client.activity.ActivityFeignClient;
@@ -20,6 +21,7 @@ import com.mall.wxw.model.order.OrderItem;
 import com.mall.wxw.mq.constant.MqConst;
 import com.mall.wxw.mq.service.RabbitService;
 import com.mall.wxw.order.mapper.OrderInfoMapper;
+import com.mall.wxw.order.mapper.OrderItemMapper;
 import com.mall.wxw.order.service.OrderInfoService;
 import com.mall.wxw.vo.order.CartInfoVo;
 import com.mall.wxw.vo.order.OrderConfirmVo;
@@ -63,6 +65,8 @@ public class OrderInfoServiceImpl extends ServiceImpl<OrderInfoMapper, OrderInfo
     private ProductFeignClient productFeignClient;
     @Resource
     private RabbitService rabbitService;
+    @Resource
+    private OrderItemMapper orderItemMapper;
 
     @Override
     public OrderConfirmVo confirmOrder() {
@@ -225,8 +229,13 @@ public class OrderInfoServiceImpl extends ServiceImpl<OrderInfoMapper, OrderInfo
         BigDecimal profitRate = new BigDecimal(0);
         BigDecimal commissionAmount = order.getTotalAmount().multiply(profitRate);
         order.setCommissionAmount(commissionAmount);
-        //保存数据
+        //保存订单基本信息数据
         baseMapper.insert(order);
+        //保存订单项数据
+        orderItemList.forEach(orderItem -> {
+            orderItem.setOrderId(order.getId());
+            orderItemMapper.insert(orderItem);
+        });
 
         //更新优惠券使用状态
         if(null != order.getCouponId()) {
@@ -246,9 +255,20 @@ public class OrderInfoServiceImpl extends ServiceImpl<OrderInfoMapper, OrderInfo
         return order.getId();
     }
 
+    //订单详情
     @Override
     public OrderInfo getOrderInfoById(Long orderId) {
-        return null;
+        OrderInfo orderInfo = baseMapper.selectById(orderId);
+        orderInfo.getParam().put("orderStatusName", orderInfo.getOrderStatus().getComment());
+        List<OrderItem> orderItemList = orderItemMapper
+                .selectList(new LambdaQueryWrapper<OrderItem>().eq(OrderItem::getOrderId, orderInfo.getId()));
+        orderInfo.setOrderItemList(orderItemList);
+        return orderInfo;
+    }
+
+    @Override
+    public OrderInfo getOrderInfoByOrderNo(String orderNo) {
+        return baseMapper.selectOne(new LambdaQueryWrapper<OrderInfo>().eq(OrderInfo::getOrderNo,orderNo));
     }
 
 

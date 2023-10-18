@@ -21,4 +21,6 @@ public interface OrderInfoService extends IService<OrderInfo> {
     Long submitOrder(OrderSubmitVo orderParamVo);
 
     OrderInfo getOrderInfoById(Long orderId);
+
+    OrderInfo getOrderInfoByOrderNo(String orderNo);
 }
