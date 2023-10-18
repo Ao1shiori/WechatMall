@@ -20,6 +20,7 @@ import java.util.Comparator;
 import java.util.Date;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
 
 /**
  * @author: wxw24633
@@ -148,8 +149,8 @@ public class CartInfoServiceImpl implements CartInfoService {
 
     @Override
     public void checkCart(Long userId, Integer isChecked, Long skuId) {
-        String cartKey = this.getCartKey(userId);
-        BoundHashOperations<String, String, CartInfo> boundHashOps = this.redisTemplate.boundHashOps(cartKey);
+        String cartKey = getCartKey(userId);
+        BoundHashOperations<String, String, CartInfo> boundHashOps = redisTemplate.boundHashOps(cartKey);
         CartInfo cartInfo = boundHashOps.get(skuId.toString());
         if(null != cartInfo) {
             cartInfo.setIsChecked(isChecked);
@@ -179,5 +180,14 @@ public class CartInfoServiceImpl implements CartInfoService {
             cartInfo.setIsChecked(isChecked);
             hashOperations.put(cartInfo.getSkuId().toString(), cartInfo);
         });
+    }
+
+    @Override
+    public List<CartInfo> getCartCheckedList(Long userId) {
+        BoundHashOperations<String, String, CartInfo> boundHashOps = this.redisTemplate.boundHashOps(this.getCartKey(userId));
+        List<CartInfo> cartInfoCheckList = boundHashOps.values()
+                .stream()
+                .filter((cartInfo) -> cartInfo.getIsChecked() == 1).collect(Collectors.toList());
+        return cartInfoCheckList;
     }
 }
