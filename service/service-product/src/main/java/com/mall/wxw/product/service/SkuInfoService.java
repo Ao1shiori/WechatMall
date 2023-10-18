@@ -42,4 +42,6 @@ public interface SkuInfoService extends IService<SkuInfo> {
     List<SkuInfo> findNewPersonList();
 
     Boolean checkAndLock(List<SkuStockLockVo> skuStockLockVoList, String orderNo);
+
+    void minusStock(String orderNo);
 }

@@ -1,14 +1,18 @@
 package com.mall.wxw.order.controller;
 
 
+import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.mall.wxw.common.auth.AuthContextHolder;
 import com.mall.wxw.common.result.Result;
 import com.mall.wxw.model.order.OrderInfo;
 import com.mall.wxw.order.service.OrderInfoService;
 import com.mall.wxw.vo.order.OrderConfirmVo;
 import com.mall.wxw.vo.order.OrderSubmitVo;
+import com.mall.wxw.vo.order.OrderUserQueryVo;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.ApiParam;
 import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
@@ -56,6 +60,22 @@ public class OrderInfoController {
     @GetMapping("inner/getOrderInfo/{orderNo}")
     public OrderInfo getOrderInfo(@PathVariable String orderNo){
         return orderInfoService.getOrderInfoByOrderNo(orderNo);
+    }
+
+    @ApiOperation(value = "获取用户订单分页列表")
+    @GetMapping("auth/findUserOrderPage/{page}/{limit}")
+    public Result findUserOrderPage(
+            @ApiParam(name = "page", value = "当前页码", required = true)
+            @PathVariable Long page,
+            @ApiParam(name = "limit", value = "每页记录数", required = true)
+            @PathVariable Long limit,
+            @ApiParam(name = "orderVo", value = "查询对象", required = false)
+                    OrderUserQueryVo orderUserQueryVo) {
+        Long userId = AuthContextHolder.getUserId();
+        orderUserQueryVo.setUserId(userId);
+        Page<OrderInfo> pageParam = new Page<>(page, limit);
+        IPage<OrderInfo> pageModel = orderInfoService.findUserOrderPage(pageParam, orderUserQueryVo);
+        return Result.ok(pageModel);
     }
 
 }
