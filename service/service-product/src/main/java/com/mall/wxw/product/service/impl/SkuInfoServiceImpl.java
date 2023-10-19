@@ -68,24 +68,27 @@ public class SkuInfoServiceImpl extends ServiceImpl<SkuInfoMapper, SkuInfo> impl
     //获取sku分页列表
     @Override
     public IPage<SkuInfo> selectPage(Page<SkuInfo> pageParam, SkuInfoQueryVo skuInfoQueryVo) {
-        //获取条件值
+        // 获取查询关键字
         String keyword = skuInfoQueryVo.getKeyword();
+        // 获取 SKU 类型
         String skuType = skuInfoQueryVo.getSkuType();
+        // 获取商品分类 ID
         Long categoryId = skuInfoQueryVo.getCategoryId();
-        //封装条件
+        // 构建查询条件
         LambdaQueryWrapper<SkuInfo> wrapper = new LambdaQueryWrapper<>();
-        if(!StringUtils.isEmpty(keyword)) {
-            wrapper.like(SkuInfo::getSkuName,keyword);
+        if (!StringUtils.isEmpty(keyword)) {
+            wrapper.like(SkuInfo::getSkuName, keyword);
         }
-        if(!StringUtils.isEmpty(skuType)) {
-            wrapper.eq(SkuInfo::getSkuType,skuType);
+        if (!StringUtils.isEmpty(skuType)) {
+            wrapper.eq(SkuInfo::getSkuType, skuType);
         }
-        if(!StringUtils.isEmpty(categoryId)) {
-            wrapper.eq(SkuInfo::getCategoryId,categoryId);
+        if (!StringUtils.isEmpty(categoryId)) {
+            wrapper.eq(SkuInfo::getCategoryId, categoryId);
         }
-        //调用方法查询
+        // 调用查询方法返回结果
         return baseMapper.selectPage(pageParam, wrapper);
     }
+
 
     //添加商品
     @Transactional(rollbackFor = {Exception.class})
@@ -132,22 +135,30 @@ public class SkuInfoServiceImpl extends ServiceImpl<SkuInfoMapper, SkuInfo> impl
 
     @Override
     public SkuInfoVo getSkuInfoVo(Long id) {
+        // 创建一个用于存储 SKU 详细信息的对象
         SkuInfoVo skuInfoVo = new SkuInfoVo();
-        //id查sku基本信息
+
+        // 通过商品 ID 查询 SKU 的基本信息
         SkuInfo skuInfo = baseMapper.selectById(id);
-        //id查sku商品图片列表
+
+        // 通过商品 ID 查询该 SKU 的商品图片列表
         List<SkuImage> skuImageList = skuImagesService.getImageListBySkuId(id);
-        //id查sku商品海报列表
+
+        // 通过商品 ID 查询该 SKU 的商品海报列表
         List<SkuPoster> skuPosterList = skuPosterService.getPosterListBySkuId(id);
-        //id查sku属性信息列表
+
+        // 通过商品 ID 查询该 SKU 的属性信息列表
         List<SkuAttrValue> skuAttrValueList = skuAttrValueService.getAttrValueListBySkuId(id);
-        //封装所有数据返回
-        BeanUtils.copyProperties(skuInfo,skuInfoVo);
+
+        // 将以上查询的信息封装到一个完整的数据对象中，用于返回
+        BeanUtils.copyProperties(skuInfo, skuInfoVo);
         skuInfoVo.setSkuImagesList(skuImageList);
         skuInfoVo.setSkuPosterList(skuPosterList);
         skuInfoVo.setSkuAttrValueList(skuAttrValueList);
+
         return skuInfoVo;
     }
+
 
     @Override
     public void updateSkuInfo(SkuInfoVo skuInfoVo) {
@@ -192,40 +203,49 @@ public class SkuInfoServiceImpl extends ServiceImpl<SkuInfoMapper, SkuInfo> impl
 
     @Override
     public void check(Long skuId, Integer status) {
-        // 更改发布状态
+        // 创建一个 SkuInfo 对象用于更新
         SkuInfo skuInfoUp = new SkuInfo();
-        skuInfoUp.setId(skuId);
-        skuInfoUp.setCheckStatus(status);
+
+        skuInfoUp.setId(skuId);  // 设置要更新的 SKU 的 ID
+        skuInfoUp.setCheckStatus(status);  // 设置审核状态（0 表示未审核，1 表示已审核）
+
+        // 更新 SKU 信息
         baseMapper.updateById(skuInfoUp);
     }
 
+
     @Override
     public void publish(Long skuId, Integer status) {
-        // 更改发布状态
-        if(status == 1) {
-            SkuInfo skuInfoUp = new SkuInfo();
-            skuInfoUp.setId(skuId);
-            skuInfoUp.setPublishStatus(1);
-            skuInfoMapper.updateById(skuInfoUp);
-            //商品上架 发送mq消息更新es数据
-            rabbitService.sendMessage(MqConst.EXCHANGE_GOODS_DIRECT,MqConst.ROUTING_GOODS_UPPER,skuId);
+        // 根据传入的状态，设置SKU的发布状态
+        SkuInfo skuInfoUp = new SkuInfo();
+        skuInfoUp.setId(skuId);  // 设置SKU ID
+
+        if (status == 1) {  // 如果状态为1，表示上架
+            skuInfoUp.setPublishStatus(1);  // 设置发布状态为上架
+            skuInfoMapper.updateById(skuInfoUp);  // 更新SKU信息
+
+            // 商品上架，发送MQ消息以更新ES数据
+            rabbitService.sendMessage(MqConst.EXCHANGE_GOODS_DIRECT, MqConst.ROUTING_GOODS_UPPER, skuId);
         } else {
-            SkuInfo skuInfoUp = new SkuInfo();
-            skuInfoUp.setId(skuId);
-            skuInfoUp.setPublishStatus(0);
-            skuInfoMapper.updateById(skuInfoUp);
-            //商品下架 发送mq消息更新es数据
-            rabbitService.sendMessage(MqConst.EXCHANGE_GOODS_DIRECT,MqConst.ROUTING_GOODS_LOWER,skuId);
+            skuInfoUp.setPublishStatus(0);  // 设置发布状态为下架
+            skuInfoMapper.updateById(skuInfoUp);  // 更新SKU信息
+
+            // 商品下架，发送MQ消息以更新ES数据
+            rabbitService.sendMessage(MqConst.EXCHANGE_GOODS_DIRECT, MqConst.ROUTING_GOODS_LOWER, skuId);
         }
     }
 
+
     @Override
     public void isNewPerson(Long skuId, Integer status) {
+        // 创建SkuInfo对象并设置新人专享状态
         SkuInfo skuInfoUp = new SkuInfo();
-        skuInfoUp.setId(skuId);
-        skuInfoUp.setIsNewPerson(status);
+        skuInfoUp.setId(skuId);  // 设置SKU ID
+        skuInfoUp.setIsNewPerson(status);  // 设置新人专享状态
+        // 更新数据库中的记录
         skuInfoMapper.updateById(skuInfoUp);
     }
+
 
     //批量获取sku信息
     @Override
@@ -236,25 +256,32 @@ public class SkuInfoServiceImpl extends ServiceImpl<SkuInfoMapper, SkuInfo> impl
     //根据关键字获取sku列表
     @Override
     public List<SkuInfo> findSkuInfoByKeyword(String keyword) {
+        // 创建Lambda查询条件包装器
         LambdaQueryWrapper<SkuInfo> queryWrapper = new LambdaQueryWrapper<>();
+        // 添加模糊查询条件：SKU名称包含关键字
         queryWrapper.like(SkuInfo::getSkuName, keyword);
+        // 使用查询条件进行查询并返回结果列表
         return baseMapper.selectList(queryWrapper);
     }
 
+
     @Override
     public List<SkuInfo> findNewPersonList() {
+        // 创建Lambda查询条件包装器
         LambdaQueryWrapper<SkuInfo> wrapper = new LambdaQueryWrapper<>();
-        //是否新人专享
-        wrapper.eq(SkuInfo::getIsNewPerson,1);
-        //是否上架状态
-        wrapper.eq(SkuInfo::getPublishStatus,1);
-        //根据库存显示前三个
+        // 过滤条件：是否新人专享
+        wrapper.eq(SkuInfo::getIsNewPerson, 1);
+        // 过滤条件：是否上架状态
+        wrapper.eq(SkuInfo::getPublishStatus, 1);
+        // 根据库存降序排列
         wrapper.orderByDesc(SkuInfo::getStock);
-        //第一页的三条
+        // 分页查询：获取第一页的前三条记录
         Page<SkuInfo> pageParam = new Page<>(1, 3);
         Page<SkuInfo> skuInfoPage = baseMapper.selectPage(pageParam, wrapper);
+        // 返回分页结果中的记录列表
         return skuInfoPage.getRecords();
     }
+
 
     @Override
     public Boolean checkAndLock(List<SkuStockLockVo> skuStockLockVoList, String orderNo) {
