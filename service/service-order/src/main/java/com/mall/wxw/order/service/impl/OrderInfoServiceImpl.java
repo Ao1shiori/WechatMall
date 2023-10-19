@@ -73,22 +73,23 @@ public class OrderInfoServiceImpl extends ServiceImpl<OrderInfoMapper, OrderInfo
 
     @Override
     public OrderConfirmVo confirmOrder() {
-        //用户id
+        // 获取当前用户的ID
         Long userId = AuthContextHolder.getUserId();
-        //用户对应团长信息
+        // 调用远程服务获取用户对应的领导地址信息
         LeaderAddressVo leaderAddressVo = userFeignClient.getUserAddressByUserId(userId);
-        //获取购物车选中商品
+        // 调用远程服务获取购物车中被选中的商品列表
         List<CartInfo> cartInfoList = cartFeignClient.getCartCheckedList(userId);
-        // 防重：生成一个唯一标识，保存到redis中一份
-        String orderNo = System.currentTimeMillis()+"";//IdWorker.getTimeId();
+        // 生成一个唯一标识，保存到Redis中一份，防止重复下单
+        String orderNo = System.currentTimeMillis() + ""; // IdWorker.getTimeId();
         redisTemplate.opsForValue().set(RedisConst.ORDER_REPEAT + orderNo, orderNo, 24, TimeUnit.HOURS);
-        //获取购物车满足条件的促销与优惠券信息
+        // 调用远程服务获取购物车满足条件的促销与优惠券信息
         OrderConfirmVo orderConfirmVo = activityFeignClient.findCartActivityAndCoupon(cartInfoList, userId);
-        //封装其他信息
+        // 将领导地址和订单号信息封装到OrderConfirmVo对象中
         orderConfirmVo.setLeaderAddressVo(leaderAddressVo);
         orderConfirmVo.setOrderNo(orderNo);
         return orderConfirmVo;
     }
+
 
     @Override
     public Long submitOrder(OrderSubmitVo orderParamVo) {
@@ -227,7 +228,6 @@ public class OrderInfoServiceImpl extends ServiceImpl<OrderInfoMapper, OrderInfo
         order.setActivityAmount(activityAmount);
         order.setCouponAmount(couponAmount);
         order.setTotalAmount(totalAmount);
-
         //计算团长佣金
         BigDecimal profitRate = new BigDecimal(0);
         BigDecimal commissionAmount = order.getTotalAmount().multiply(profitRate);
@@ -239,7 +239,6 @@ public class OrderInfoServiceImpl extends ServiceImpl<OrderInfoMapper, OrderInfo
             orderItem.setOrderId(order.getId());
             orderItemMapper.insert(orderItem);
         });
-
         //更新优惠券使用状态
         if(null != order.getCouponId()) {
             activityFeignClient.updateCouponInfoUseStatus(order.getCouponId(), userId, order.getId());
@@ -261,32 +260,40 @@ public class OrderInfoServiceImpl extends ServiceImpl<OrderInfoMapper, OrderInfo
     //订单详情
     @Override
     public OrderInfo getOrderInfoById(Long orderId) {
+        // 根据订单ID查询订单信息
         OrderInfo orderInfo = baseMapper.selectById(orderId);
+        // 将订单状态名称添加到订单参数中
         orderInfo.getParam().put("orderStatusName", orderInfo.getOrderStatus().getComment());
+        // 根据订单ID查询订单商品列表
         List<OrderItem> orderItemList = orderItemMapper
                 .selectList(new LambdaQueryWrapper<OrderItem>().eq(OrderItem::getOrderId, orderInfo.getId()));
+        // 将订单商品列表添加到订单信息中
         orderInfo.setOrderItemList(orderItemList);
         return orderInfo;
     }
 
     @Override
     public OrderInfo getOrderInfoByOrderNo(String orderNo) {
-        return baseMapper.selectOne(new LambdaQueryWrapper<OrderInfo>().eq(OrderInfo::getOrderNo,orderNo));
+        // 使用LambdaQueryWrapper来构建查询条件
+        return baseMapper.selectOne(new LambdaQueryWrapper<OrderInfo>().eq(OrderInfo::getOrderNo, orderNo));
     }
+
 
     //更新订单状态 扣减库存
     @Override
     public void orderPay(String orderNo) {
+        // 根据订单号查询订单信息
         OrderInfo orderInfo = getOrderInfoByOrderNo(orderNo);
-        if (orderInfo == null || orderInfo.getOrderStatus() != OrderStatus.UNPAID){
+        // 如果订单不存在或者订单状态不是未支付，则直接返回
+        if (orderInfo == null || orderInfo.getOrderStatus()!= OrderStatus.UNPAID){
             return;
         }
-        //更新状态
+        // 更新订单状态
         updateOrderStatus(orderInfo.getId());
-        //扣减库存
-        //扣减库存
+        // 发送消息到消息队列，减少库存
         rabbitService.sendMessage(MqConst.EXCHANGE_ORDER_DIRECT, MqConst.ROUTING_MINUS_STOCK, orderNo);
     }
+
 
     @Override
     public IPage<OrderInfo> findUserOrderPage(Page<OrderInfo> pageParam, OrderUserQueryVo orderUserQueryVo) {
@@ -294,7 +301,6 @@ public class OrderInfoServiceImpl extends ServiceImpl<OrderInfoMapper, OrderInfo
         wrapper.eq(OrderInfo::getUserId,orderUserQueryVo.getUserId());
         wrapper.eq(OrderInfo::getOrderStatus,orderUserQueryVo.getOrderStatus());
         IPage<OrderInfo> pageModel = baseMapper.selectPage(pageParam, wrapper);
-
         //获取每个订单，把每个订单里面订单项查询封装
         List<OrderInfo> orderInfoList = pageModel.getRecords();
         for(OrderInfo orderInfo : orderInfoList) {
@@ -312,12 +318,15 @@ public class OrderInfoServiceImpl extends ServiceImpl<OrderInfoMapper, OrderInfo
     }
 
     private void updateOrderStatus(Long orderId) {
+        // 根据订单ID查询订单信息
         OrderInfo orderInfo = baseMapper.selectById(orderId);
+        // 将订单状态设置为等待发货
         orderInfo.setOrderStatus(OrderStatus.WAITING_DELEVER);
+        // 将处理状态设置为等待发货
         orderInfo.setProcessStatus(ProcessStatus.WAITING_DELEVER);
+        // 更新订单信息
         baseMapper.updateById(orderInfo);
     }
-
 
     //计算总金额
     private BigDecimal computeTotalAmount(List<CartInfo> cartInfoList) {
