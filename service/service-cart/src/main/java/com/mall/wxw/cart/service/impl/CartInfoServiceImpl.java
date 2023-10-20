@@ -119,11 +119,15 @@ public class CartInfoServiceImpl implements CartInfoService {
 
     @Override
     public void batchDeleteCart(List<Long> skuIdList, Long userId) {
-        BoundHashOperations<String,String,CartInfo> hashOperations = redisTemplate.boundHashOps(getCartKey(userId));
-        skuIdList.forEach(skuId->{
+        // 获取 Redis 中购物车数据的哈希操作对象
+        BoundHashOperations<String, String, CartInfo> hashOperations = redisTemplate.boundHashOps(getCartKey(userId));
+        // 遍历需要删除的 SKU ID 列表
+        skuIdList.forEach(skuId -> {
+            // 从购物车中删除指定 SKU
             hashOperations.delete(skuId.toString());
         });
     }
+
 
     //购物车列表
     @Override
@@ -149,47 +153,89 @@ public class CartInfoServiceImpl implements CartInfoService {
 
     @Override
     public void checkCart(Long userId, Integer isChecked, Long skuId) {
+        // 获取购物车的 Redis Key
         String cartKey = getCartKey(userId);
+
+        // 获取 Redis 中购物车数据的哈希操作对象
         BoundHashOperations<String, String, CartInfo> boundHashOps = redisTemplate.boundHashOps(cartKey);
+
+        // 从购物车中获取指定 SKU 的信息
         CartInfo cartInfo = boundHashOps.get(skuId.toString());
-        if(null != cartInfo) {
+
+        // 如果购物车中存在该 SKU 的信息
+        if (null != cartInfo) {
+            // 设置该 SKU 是否被选中
             cartInfo.setIsChecked(isChecked);
+
+            // 更新购物车中的信息
             boundHashOps.put(skuId.toString(), cartInfo);
+
+            // 更新购物车 Key 的过期时间
             this.setCartKeyExpire(cartKey);
         }
     }
 
+
     @Override
     public void checkAllCart(Long userId, Integer isChecked) {
+        // 获取购物车的 Redis Key
         String cartKey = this.getCartKey(userId);
+
+        // 获取 Redis 中购物车数据的哈希操作对象
         BoundHashOperations<String, String, CartInfo> boundHashOps = this.redisTemplate.boundHashOps(cartKey);
+
+        // 遍历购物车中所有的商品信息
         boundHashOps.values().forEach(cartInfo -> {
+            // 设置商品是否被选中
             cartInfo.setIsChecked(isChecked);
+
+            // 更新购物车中的商品信息
             boundHashOps.put(cartInfo.getSkuId().toString(), cartInfo);
         });
+
+        // 更新购物车 Key 的过期时间
         this.setCartKeyExpire(cartKey);
     }
 
     @Override
     public void batchCheckCart(List<Long> skuIdList, Long userId, Integer isChecked) {
+        // 获取购物车的 Redis Key
         String cartKey = getCartKey(userId);
-        //获取缓存对象
+
+        // 获取 Redis 中购物车数据的哈希操作对象
         BoundHashOperations<String, String, CartInfo> hashOperations = redisTemplate.boundHashOps(cartKey);
+
+        // 遍历需要批量操作的 SKU ID 列表
         skuIdList.forEach(skuId -> {
+            // 从购物车中获取指定 SKU 的信息
             CartInfo cartInfo = hashOperations.get(skuId.toString());
+
+            // 设置商品是否被选中
             cartInfo.setIsChecked(isChecked);
+
+            // 更新购物车中的商品信息
             hashOperations.put(cartInfo.getSkuId().toString(), cartInfo);
         });
     }
 
+
     @Override
     public List<CartInfo> getCartCheckedList(Long userId) {
-        BoundHashOperations<String, String, CartInfo> boundHashOps = this.redisTemplate.boundHashOps(this.getCartKey(userId));
+        // 获取购物车的 Redis Key
+        String cartKey = this.getCartKey(userId);
+
+        // 获取 Redis 中购物车数据的哈希操作对象
+        BoundHashOperations<String, String, CartInfo> boundHashOps = this.redisTemplate.boundHashOps(cartKey);
+
+        // 获取购物车中已选中的商品列表
         List<CartInfo> cartInfoCheckList = boundHashOps.values()
                 .stream()
                 .filter((cartInfo) -> cartInfo.getIsChecked() == 1).collect(Collectors.toList());
+
+        // 返回已选中的购物车商品列表
         return cartInfoCheckList;
     }
+
 
     //删除选用的购物车记录
     @Override

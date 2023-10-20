@@ -58,15 +58,22 @@ public class ActivityInfoServiceImpl extends ServiceImpl<ActivityInfoMapper, Act
 
     @Override
     public IPage<ActivityInfo> selectPage(Page<ActivityInfo> pageParam) {
+        // 创建查询条件包装器
         QueryWrapper<ActivityInfo> queryWrapper = new QueryWrapper<>();
-        queryWrapper.orderByDesc("id");
+        queryWrapper.orderByDesc("id"); // 按照id降序排序
 
+        // 使用活动信息映射器(activityInfoMapper)进行分页查询
         IPage<ActivityInfo> page = activityInfoMapper.selectPage(pageParam, queryWrapper);
+
+        // 遍历查询结果并设置活动类型的中文描述
         page.getRecords().stream().forEach(item -> {
             item.setActivityTypeString(item.getActivityType().getComment());
         });
+
+        // 返回查询结果
         return page;
     }
+
 
     @Override
     public Map<String, Object> findActivityRuleList(Long activityId) {
@@ -120,25 +127,35 @@ public class ActivityInfoServiceImpl extends ServiceImpl<ActivityInfoMapper, Act
 
     @Override
     public List<SkuInfo> findSkuInfoByKeyword(String keyword) {
-        //根据关键字查询sku匹配内容列表
+        // 根据关键字查询匹配的SKU信息列表
         List<SkuInfo> skuInfoList = productFeignClient.findSkuInfoByKeyword(keyword);
-        //查不到匹配内容返回空集合
-        if (skuInfoList.size()==0){
+
+        // 如果没有匹配的内容，返回一个空集合
+        if (skuInfoList.size() == 0) {
             return skuInfoList;
         }
+
+        // 提取匹配SKU信息的ID列表
         List<Long> skuIdList = skuInfoList.stream().map(SkuInfo::getId).collect(Collectors.toList());
 
+        // 查询已存在的SKU ID列表
         List<Long> existSkuIdList = baseMapper.selectSkuIdListExist(skuIdList);
 
+        // 创建一个用于存储不存在的SKU信息的列表
         List<SkuInfo> notExistSkuInfoList = new ArrayList<>();
-        //排除已经存在的sku
-        for(SkuInfo skuInfo : skuInfoList) {
-            if(existSkuIdList.contains(skuInfo.getId())) {
+
+        // 排除已经存在的SKU
+        for (SkuInfo skuInfo : skuInfoList) {
+            if (existSkuIdList.contains(skuInfo.getId())) {
+                // 如果SKU已经存在，将其添加到不存在的SKU信息列表
                 notExistSkuInfoList.add(skuInfo);
             }
         }
+
+        // 返回不存在的SKU信息列表
         return notExistSkuInfoList;
     }
+
 
     @Override
     public List<ActivityRule> findActivityRule(Long skuId) {
@@ -148,35 +165,45 @@ public class ActivityInfoServiceImpl extends ServiceImpl<ActivityInfoMapper, Act
     @Override
     public Map<Long, List<String>> findActivity(List<Long> skuIdList) {
         Map<Long, List<String>> result = new HashMap<>();
-        //遍历skuIdList
-        skuIdList.forEach(skuId ->{
-            //查询skuId对应活动的规则列表
+        // 遍历SKU ID列表
+        skuIdList.forEach(skuId -> {
+            // 查询SKU ID 对应的活动规则列表
             List<ActivityRule> activityRuleList = baseMapper.findActivityRule(skuId);
-            //封装数据
-            if (!CollectionUtils.isEmpty(activityRuleList)){
+            // 封装数据
+            if (!CollectionUtils.isEmpty(activityRuleList)) {
                 List<String> ruleList = new ArrayList<>();
-                //处理规则名称
+                // 处理规则名称
                 for (ActivityRule activityRule : activityRuleList) {
                     ruleList.add(getRuleDesc(activityRule));
                 }
-                result.put(skuId,ruleList);
+                // 将SKU ID 和规则列表放入结果Map中
+                result.put(skuId, ruleList);
             }
         });
+        // 返回结果Map
         return result;
     }
 
+
     @Override
     public Map<String, Object> findActivityAndCoupon(Long skuId, Long userId) {
+        // 通过SKU ID查找对应的活动SKU
         ActivitySku activitySku = activitySkuMapper.selectOne(new LambdaQueryWrapper<ActivitySku>().eq(ActivitySku::getSkuId, skuId));
-        //skuid获取sku营销活动 一个活动多个规则
+
+        // 通过活动SKU中的活动ID获取活动规则列表
         Map<String, Object> activityRuleList = this.findActivityRuleList(activitySku.getActivityId());
-        //skuid和userid查优惠券信息
-        List<CouponInfo> couponInfoList = couponInfoService.findCouponInfoList(skuId,userId);
-        //封装返回
+
+        // 通过SKU ID和用户ID查询优惠券信息
+        List<CouponInfo> couponInfoList = couponInfoService.findCouponInfoList(skuId, userId);
+
+        // 封装返回结果
         Map<String, Object> result = new HashMap<>(activityRuleList);
-        result.put("couponInfoList",couponInfoList);
+        result.put("couponInfoList", couponInfoList);
+
+        // 返回封装的结果
         return result;
     }
+
 
     @Override
     public OrderConfirmVo findCartActivityAndCoupon(List<CartInfo> cartInfoList, Long userId) {
@@ -429,11 +456,13 @@ public class ActivityInfoServiceImpl extends ServiceImpl<ActivityInfoMapper, Act
     private int computeCartNum(List<CartInfo> cartInfoList) {
         int total = 0;
         for (CartInfo cartInfo : cartInfoList) {
-            //是否选中
-            if(cartInfo.getIsChecked().intValue() == 1) {
+            // 判断购物车项是否被选中
+            if (cartInfo.getIsChecked().intValue() == 1) {
+                // 如果选中，则累加该购物车项中的商品数量
                 total += cartInfo.getSkuNum();
             }
         }
         return total;
     }
+
 }
