@@ -37,11 +37,10 @@ public class CarApiController {
     @GetMapping("addToCart/{skuId}/{skuNum}")
     public Result addToCart(@PathVariable("skuId") Long skuId,
                             @PathVariable("skuNum") Integer skuNum) {
-        // 如何获取userId
         Long userId = AuthContextHolder.getUserId();
         cartInfoService.addToCart(userId, skuId, skuNum);
-        return Result.ok(null);
-    }
+        return Result.ok(null); 
+    }   
 
     /**
      * 删除
@@ -51,18 +50,19 @@ public class CarApiController {
      * @return
      */
     @DeleteMapping("deleteCart/{skuId}")
-    public Result deleteCart(@PathVariable("skuId") Long skuId,
-                             HttpServletRequest request) {
-        // 如何获取userId
+    public Result deleteCart(@PathVariable("skuId") Long skuId, HttpServletRequest request) {
+        // 获取用户 ID
         Long userId = AuthContextHolder.getUserId();
+        // 调用购物车服务删除购物车中指定 SKU 的商品
         cartInfoService.deleteCart(skuId, userId);
+        // 返回删除成功的响应结果
         return Result.ok(null);
     }
+
 
     @ApiOperation(value="清空购物车")
     @DeleteMapping("deleteAllCart")
     public Result deleteAllCart(HttpServletRequest request){
-        // 如何获取userId
         Long userId = AuthContextHolder.getUserId();
         cartInfoService.deleteAllCart(userId);
         return Result.ok(null);
@@ -70,12 +70,15 @@ public class CarApiController {
 
     @ApiOperation(value="批量删除购物车")
     @PostMapping("batchDeleteCart")
-    public Result batchDeleteCart(@RequestBody List<Long> skuIdList, HttpServletRequest request){
-        // 如何获取userId
+    public Result batchDeleteCart(@RequestBody List<Long> skuIdList, HttpServletRequest request) {
+        // 获取用户 ID
         Long userId = AuthContextHolder.getUserId();
+        // 调用购物车服务批量删除购物车中指定 SKU 的商品
         cartInfoService.batchDeleteCart(skuIdList, userId);
+        // 返回删除成功的响应结果
         return Result.ok(null);
     }
+
 
     /**
      * 查询购物车列表
@@ -85,11 +88,14 @@ public class CarApiController {
      */
     @GetMapping("cartList")
     public Result cartList(HttpServletRequest request) {
-        // 获取用户Id
+        // 获取用户 ID
         Long userId = AuthContextHolder.getUserId();
+        // 根据用户 ID 获取购物车列表
         List<CartInfo> cartInfoList = cartInfoService.getCartList(userId);
+        // 返回包含购物车列表的响应结果
         return Result.ok(cartInfoList);
     }
+
 
     /**
      * 查询带优惠卷的购物车
@@ -99,13 +105,19 @@ public class CarApiController {
      */
     @GetMapping("activityCartList")
     public Result activityCartList(HttpServletRequest request) {
-        // 获取用户Id
+        // 获取用户 ID
         Long userId = AuthContextHolder.getUserId();
+
+        // 从购物车服务获取用户的购物车列表
         List<CartInfo> cartInfoList = cartInfoService.getCartList(userId);
 
+        // 使用活动 Feign 客户端查询购物车活动信息和优惠券
         OrderConfirmVo orderTradeVo = activityFeignClient.findCartActivityAndCoupon(cartInfoList, userId);
+
+        // 返回包含购物车活动信息和优惠券的响应结果
         return Result.ok(orderTradeVo);
     }
+
 
     /**
      * 更新选中状态
