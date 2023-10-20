@@ -149,7 +149,6 @@ public class CarApiController {
     @ApiOperation(value="批量选择购物车")
     @PostMapping("batchCheckCart/{isChecked}")
     public Result batchCheckCart(@RequestBody List<Long> skuIdList, @PathVariable(value = "isChecked") Integer isChecked, HttpServletRequest request){
-        // 如何获取userId
         Long userId = AuthContextHolder.getUserId();
         cartInfoService.batchCheckCart(skuIdList, userId, isChecked);
         return Result.ok(null);

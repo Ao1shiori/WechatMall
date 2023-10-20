@@ -65,10 +65,8 @@ public class WeixinServiceImpl implements WeixinService {
             } else {
                 paramMap.put("openid", "oD7av4igt-00GI8PqsIlg5FROYnI");
             }
-
             //2、HTTPClient来根据URL访问第三方接口并且传递参数
             HttpClient client = new HttpClient("https://api.mch.weixin.qq.com/pay/unifiedorder");
-
             //client设置参数
             client.setXmlParam(WXPayUtil.generateSignedXml(paramMap, ConstantPropertiesUtils.PARTNERKEY));
             client.setHttps(true);

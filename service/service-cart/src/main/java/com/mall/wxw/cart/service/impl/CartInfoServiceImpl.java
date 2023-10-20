@@ -204,7 +204,6 @@ public class CartInfoServiceImpl implements CartInfoService {
 
         // 获取 Redis 中购物车数据的哈希操作对象
         BoundHashOperations<String, String, CartInfo> hashOperations = redisTemplate.boundHashOps(cartKey);
-
         // 遍历需要批量操作的 SKU ID 列表
         skuIdList.forEach(skuId -> {
             // 从购物车中获取指定 SKU 的信息
